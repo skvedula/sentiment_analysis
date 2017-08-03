@@ -110,7 +110,7 @@ class SentimentAnalysis:
 				tempModelElement.negativeScore = in.readShort()
 				tempModelElement.positiveScore = in.readShort()
 				UnigramModelElementList.add(tempModelElement)
-			in.close(); 
+			in.close()
 		except IOError as e:
 			e.printStackTrace()
 
