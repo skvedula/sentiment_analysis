@@ -89,20 +89,19 @@ class SentimentAnalysis:
 	    	return -1
     return -1
 
+###############################################
+
 	def readUnigramDataFile():
 		del UnigramModelElementList[:]
 		DataInputStream in
 		try:
 			with open('unigrammodel.dat', 'r') as fileIn:
-			    for line in f:
-			        print line.encode('hex')			
-			# InputStream fileIn = getClass().getResourceAsStream("unigrammodel.dat")
-			BufferedInputStream bufferIn = new BufferedInputStream(fileIn)
-			in = new DataInputStream(bufferIn);			
+				bufferIn = BufferedInputStream(fileIn)
+				in = DataInputStream(bufferIn)
 			aaa = 0
 			byte[] keywordlenbyte = new byte[Short.SIZE/8]
 			while((aaa = in.read(keywordlenbyte,0,Short.SIZE/8))>0):
-				UnigramModelElement tempModelElement = new UnigramModelElement()
+				tempModelElement = UnigramModelElement()
 				short keywordlen = byteToShort(keywordlenbyte)
 				byte[] keywordbytes = new byte[keywordlen]
 				aaa = in.read(keywordbytes, 0, keywordlen)
@@ -110,7 +109,7 @@ class SentimentAnalysis:
 				tempModelElement.negativeScore = in.readShort()
 				tempModelElement.positiveScore = in.readShort()
 				UnigramModelElementList.add(tempModelElement)
-			in.close()
+			in.close(); 
 		except IOError as e:
 			e.printStackTrace()
 
