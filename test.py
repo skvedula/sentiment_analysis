@@ -39,12 +39,12 @@ class SentimentAnalysis:
 	def normalizeSentimentWord(self, word):
 		if(len(word)>0):
 			word= word.lower()
-			word =removePrePunctuation(word)
-			word =removePostPunctuation(word)
-			word = filterRepeatedLetters(word)
+			word = self.removePrePunctuation(word)
+			word = self.removePostPunctuation(word)
+			word = self.filterRepeatedLetters(word)
 		return word
 
-	def removePrePunctuation(token):
+	def removePrePunctuation(self, token):
 		if(len(token) <= 1):
 			return token
 		startChar = token[0:1]
@@ -55,7 +55,7 @@ class SentimentAnalysis:
 			startChar = token[0:1]
 		return token
 
-	def removePostPunctuation(token):
+	def removePostPunctuation(self, token):
 		if(len(token) <= 1):
 			return token
 		endChar = token[len(token) - 1:len(token)]
@@ -66,14 +66,14 @@ class SentimentAnalysis:
 			endChar = token[len(token) - 1:len(token)]
 		return token
 
-	def filterRepeatedLetters(token):
+	def filterRepeatedLetters(self, token):
 		matching_chars=0
 		filterWord = False
 		newWord = ""
-		if(token==null):
+		if(token==None):
 			return token
-		for idx, char in enumerate(list(token)):
-			if(char[idx] == char[idx+1]):
+		for idx, char in enumerate(token[:-1]):
+			if(token[idx] == token[idx+1]):
 				matching_chars = matching_chars + 1
 			else:
 				matching_chars=0
@@ -112,21 +112,21 @@ class SentimentAnalysis:
 		  p += math.exp(logprobs[i]-max)
 	  return max + math.log(p)
 
-	def isTokenConjugation(token):
-		if(token!=null):
+	def isTokenConjugation(self, token):
+		if(token != None):
 			for conjunction in CONJUNCTIONS_ENGLISH:
 				if(token == conjunction):
 					return True
 		return False
 
-	def searchSentimentKeyword(word):
+	def searchSentimentKeyword(self, word):
 		first = 0
-		last = UnigramModelElementList.size()-1;
+		last = len(UnigramModelElementList)-1;
 		middle = (first + last)/2;
 		while(first <= last):
-			if(UnigramModelElementList.get(middle).Word.compareTo(word)<0):
+			if(UnigramModelElementList[middle]["Word"] < word):
 				first = middle + 1
-			elif(UnigramModelElementList.get(middle).Word.compareTo(word) == 0):
+			elif(UnigramModelElementList[middle]["Word"] == word):
 				return middle
 			else:
 				last = middle - 1
@@ -164,38 +164,25 @@ class SentimentAnalysis:
 		probs = [0,0];
 		data = data.replace("\\n", ",")
 		sentences = re.split('[|,|.|?]', data)
-		print sentences
 		if(len(sentences) > 0):
 			tokens = sentences[len(sentences)-1].split(" ")
-			print tokens, len(tokens), SentimentWordBuffer-1, -1
-			print tokens[-SentimentWordBuffer:]
-			for token in tokens[-SentimentWordBuffer:]:
-				print "normalize ::before"
+			for token in reversed(tokens[-SentimentWordBuffer:]):
 				token = self.normalizeSentimentWord(token)
-				print token
-			for token in tokens[len(tokens):SentimentWordBuffer-1:-1]:
-				print "tokens"
-				if(tokens[i]!=null):
-					if(self.isTokenConjugation(tokens[i])):
+			for i, token in enumerate(reversed(tokens[-SentimentWordBuffer:])):
+				if(token != None):
+					if(self.isTokenConjugation(token)):
 						break
-					idx = self.searchSentimentKeyword(tokens[i])
-					print "idx : ", idx
+					idx = self.searchSentimentKeyword(token)
 					if(idx>=0):
-						probs[0] += UnigramModelElementList[idx]["negativeScore"]/1000.0
-						print "probs[0]:", probs[0]
-						probs[1] += UnigramModelElementList[idx]["positiveScore"]/1000.0
-						print "probs[1]:", probs[1]
+						probs[0] += int(UnigramModelElementList[idx]["negativeScore"])/1000.0
+						probs[1] += int(UnigramModelElementList[idx]["positiveScore"])/1000.0
 					if(i>0):
-						previdx = self.searchSentimentKeyword(tokens[i-1])
-						print "previdx : ", idx
+						previdx = self.searchSentimentKeyword(reversed(tokens[-SentimentWordBuffer:])[i-1])
 						if(idx>=0 and previdx>=0):
 							bigramidx = self.searchBigramKeyword(previdx,idx)
-							print "bigramidx : ", idx
 							if(bigramidx>=0):
-								probs[0]+= BigramModelElementList[bigramidx]["negativeScore"]/1000.0
-								print "bigram##probs[0]:", probs[0]
-								probs[1]+= BigramModelElementList[bigramidx]["positiveScore"]/1000.0
-								print "bigram##probs[1]:", probs[1]
+								probs[0]+= int(BigramModelElementList[bigramidx]["negativeScore"])/1000.0
+								probs[1]+= int(BigramModelElementList[bigramidx]["positiveScore"])/1000.0
 				probsum = self.sumLogProb(probs)
 				probnegative = math.exp(probs[0])/math.exp(probsum)
 				probpositive = math.exp(probs[1])/math.exp(probsum)
