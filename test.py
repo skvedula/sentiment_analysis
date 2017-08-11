@@ -164,28 +164,38 @@ class SentimentAnalysis:
 		probs = [0,0];
 		data = data.replace("\\n", ",")
 		sentences = re.split('[|,|.|?]', data)
+		print sentences
 		if(len(sentences) > 0):
-				tokens = sentences[len(sentences)-1].split(" ")
-				for token in tokens[len(tokens):SentimentWordBuffer-1:-1]:
-					token = normalizeSentimentWord(token)
-				for token in tokens[len(tokens):SentimentWordBuffer-1:-1]:
-					if(tokens[i]!=null):
-						if(isTokenConjugation(tokens[i])):
-							break
-						idx = searchSentimentKeyword(tokens[i])
-						print "idx : ", idx
-						if(idx>=0):
-							probs[0] += UnigramModelElementList[idx]["negativeScore"]/1000.0
-							probs[1] += UnigramModelElementList[idx]["positiveScore"]/1000.0
-						if(i>0):
-							previdx = searchSentimentKeyword(tokens[i-1])
-							print "previdx : ", idx
-							if(idx>=0 and previdx>=0):
-								bigramidx = searchBigramKeyword(previdx,idx)
-								print "bigramidx : ", idx
-								if(bigramidx>=0):
-									probs[0]+= BigramModelElementList[bigramidx]["negativeScore"]/1000.0
-									probs[1]+= BigramModelElementList[bigramidx]["positiveScore"]/1000.0
+			tokens = sentences[len(sentences)-1].split(" ")
+			print tokens, len(tokens), SentimentWordBuffer-1, -1
+			print tokens[-SentimentWordBuffer:]
+			for token in tokens[-SentimentWordBuffer:]:
+				print "normalize ::before"
+				token = self.normalizeSentimentWord(token)
+				print token
+			for token in tokens[len(tokens):SentimentWordBuffer-1:-1]:
+				print "tokens"
+				if(tokens[i]!=null):
+					if(self.isTokenConjugation(tokens[i])):
+						break
+					idx = self.searchSentimentKeyword(tokens[i])
+					print "idx : ", idx
+					if(idx>=0):
+						probs[0] += UnigramModelElementList[idx]["negativeScore"]/1000.0
+						print "probs[0]:", probs[0]
+						probs[1] += UnigramModelElementList[idx]["positiveScore"]/1000.0
+						print "probs[1]:", probs[1]
+					if(i>0):
+						previdx = self.searchSentimentKeyword(tokens[i-1])
+						print "previdx : ", idx
+						if(idx>=0 and previdx>=0):
+							bigramidx = self.searchBigramKeyword(previdx,idx)
+							print "bigramidx : ", idx
+							if(bigramidx>=0):
+								probs[0]+= BigramModelElementList[bigramidx]["negativeScore"]/1000.0
+								print "bigram##probs[0]:", probs[0]
+								probs[1]+= BigramModelElementList[bigramidx]["positiveScore"]/1000.0
+								print "bigram##probs[1]:", probs[1]
 				probsum = self.sumLogProb(probs)
 				probnegative = math.exp(probs[0])/math.exp(probsum)
 				probpositive = math.exp(probs[1])/math.exp(probsum)
@@ -214,6 +224,7 @@ class SentimentAnalysis:
 UnigramModelElementList = []
 BigramModelElementList = []
 outputSentimentElement = {}
+defaultnegativeprobability =  0.5
 	
 result = {}
 temp = SentimentAnalysis(sys.argv[1])
