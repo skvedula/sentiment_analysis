@@ -121,11 +121,9 @@ class SentimentAnalysis:
 
 	def searchSentimentKeyword(self, word):
 		first = 0
-		last = len(UnigramModelElementList)-1;
-		print "first, last", first, last
+		last = len(UnigramModelElementList)-1
 		middle = (first + last)/2;
 		while(first <= last):
-			print(UnigramModelElementList[middle]["Word"] < word)
 			if(UnigramModelElementList[middle]["Word"] < word):
 				first = middle + 1
 			elif(UnigramModelElementList[middle]["Word"] == word):
@@ -137,20 +135,10 @@ class SentimentAnalysis:
 				return -1
 		return -1
 
-	# def searchBigramKeyword(self, idx1, idx2):
-	# 	print "idx1, idx2 ::: ", idx1, idx2
-	# 	for i, elem in enumerate(BigramModelElementList):
-	# 		print elem
-	# 		if(elem["Word1"] == idx1):
-	# 			if(elem["Word2"] == idx2):
-	# 				return i
-	# 	return -1
-
-	def searchBigramKeyword(self, word1, word2):
+	def searchBigramKeyword(self, idx1, idx2):
 		for i, elem in enumerate(BigramModelElementList):
-			print elem
-			if(elem["Word1"] == word1):
-				if(elem["Word2"] == word2):
+			if(elem["Word1"] == idx1):
+				if(elem["Word2"] == idx2):
 					return i
 		return -1
 
@@ -186,32 +174,23 @@ class SentimentAnalysis:
 		if(len(sentences) > 0):
 			tokens = sentences[len(sentences)-1].split(" ")
 			for token in reversed(list(tokens[-SentimentWordBuffer:])):
-				print token
 				token = self.normalizeSentimentWord(token)
 			trimmed_sentence = list(tokens[-SentimentWordBuffer:])
 			for i, token in reversed(list(enumerate(trimmed_sentence))):
-				print "came here :", i, token
 				if(token != None):
 					if(self.isTokenConjugation(token)):
-						print "break!"
 						break
 					idx = self.searchSentimentKeyword(token)
 					if(idx>=0):
 						probs[0] += int(UnigramModelElementList[idx]["negativeScore"])/1000.0
-						print "probs[0]:", probs[0]
 						probs[1] += int(UnigramModelElementList[idx]["positiveScore"])/1000.0
-						print "probs[1]:", probs[1]
 					if(i>0):
 						previdx = self.searchSentimentKeyword(list(reversed(tokens[-SentimentWordBuffer:]))[i-1])
-						print "previdx :: ", previdx
 						if(idx>=0 and previdx>=0):
 							bigramidx = self.searchBigramKeyword(previdx,idx)
-							print "bigramidx :: ", bigramidx
 							if(bigramidx>=0):
 								probs[0]+= int(BigramModelElementList[bigramidx]["negativeScore"])/1000.0
-								print "bi#probs[0]:", probs[0]
 								probs[1]+= int(BigramModelElementList[bigramidx]["positiveScore"])/1000.0
-								print "bi#probs[1]:", probs[1]
 			probsum = self.sumLogProb(probs)
 			probnegative = math.exp(probs[0])/math.exp(probsum)
 			probpositive = math.exp(probs[1])/math.exp(probsum)
